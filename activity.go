@@ -1,7 +1,6 @@
 package jsonvalidate
 
 import (
-	"fmt"
 	"strings"
 
 	"encoding/json"
@@ -94,7 +93,7 @@ func check(schemaLoader, documentLoader gojsonschema.JSONLoader) (bool, error) {
 
 	if err != nil {
 		logger.Error(err)
-		return false, fmt.Errorf("Error encountered in Validation %v", err)
+		return false, nil
 	}
 
 	if result.Valid() {
@@ -102,6 +101,6 @@ func check(schemaLoader, documentLoader gojsonschema.JSONLoader) (bool, error) {
 		return true, nil
 	}
 	logger.Error("The document is not valid. see errors :\n")
-	return false, fmt.Errorf("Error encountered in Validation %v", err)
+	return false, nil
 
 }
