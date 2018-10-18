@@ -37,12 +37,24 @@ func (a *JsonValidate) Eval(ctx activity.Context) (done bool, err error) {
 
 	//If path is not defined directly try to Unmarshall
 	if path != "" {
-		documentLoader := gojsonschema.NewStringLoader(input)
+		if isValid(input) {
+			documentLoader := gojsonschema.NewStringLoader(input)
 
-		//Check is the path is a path to file/http endpoint. If not it's a string and check the Schema against it
-		if isPath(path) {
-			logger.Infof("Reference Loader")
-			schemaLoder := gojsonschema.NewReferenceLoader(path)
+			//Check is the path is a path to file/http endpoint. If not it's a string and check the Schema against it
+			if isPath(path) {
+				logger.Infof("Reference Loader")
+				schemaLoder := gojsonschema.NewReferenceLoader(path)
+
+				valid, err := check(schemaLoder, documentLoader)
+				if valid {
+					ctx.SetOutput("isValid", true)
+					return true, nil
+				}
+				ctx.SetOutput("isValid", false)
+				return false, err
+			}
+			logger.Infof("String Loader")
+			schemaLoder := gojsonschema.NewStringLoader(path)
 
 			valid, err := check(schemaLoder, documentLoader)
 			if valid {
@@ -52,16 +64,6 @@ func (a *JsonValidate) Eval(ctx activity.Context) (done bool, err error) {
 			ctx.SetOutput("isValid", false)
 			return false, err
 		}
-		logger.Infof("String Loader")
-		schemaLoder := gojsonschema.NewStringLoader(path)
-
-		valid, err := check(schemaLoder, documentLoader)
-		if valid {
-			ctx.SetOutput("isValid", true)
-			return true, nil
-		}
-		ctx.SetOutput("isValid", false)
-		return false, err
 
 	}
 
@@ -71,6 +73,7 @@ func (a *JsonValidate) Eval(ctx activity.Context) (done bool, err error) {
 		return true, nil
 	}
 	ctx.SetOutput("isValid", false)
+
 	return false, fmt.Errorf("Error encountered in Validation %v", err)
 
 }
