@@ -1,6 +1,7 @@
 package jsonvalidate
 
 import (
+	"fmt"
 	"strings"
 
 	"encoding/json"
@@ -50,7 +51,7 @@ func (a *JsonValidate) Eval(ctx activity.Context) (done bool, err error) {
 					return true, nil
 				}
 				ctx.SetOutput("isValid", false)
-				return false, nil
+				return true, nil
 			}
 			logger.Infof("String Loader")
 			schemaLoder := gojsonschema.NewStringLoader(path)
@@ -61,7 +62,7 @@ func (a *JsonValidate) Eval(ctx activity.Context) (done bool, err error) {
 				return true, nil
 			}
 			ctx.SetOutput("isValid", false)
-			return false, nil
+			return true, nil
 		}
 
 	}
@@ -73,7 +74,7 @@ func (a *JsonValidate) Eval(ctx activity.Context) (done bool, err error) {
 	}
 	ctx.SetOutput("isValid", false)
 
-	return false, nil
+	return true, nil
 
 }
 
@@ -90,17 +91,18 @@ func isPath(s string) bool {
 
 func check(schemaLoader, documentLoader gojsonschema.JSONLoader) (bool, error) {
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
-
+	fmt.Println(result, err)
 	if err != nil {
 		//logger.Error(err)
-		return false, nil
+		return true, nil
 	}
 
 	if result.Valid() {
 		logger.Infof("The document is valid\n")
 		return true, nil
 	}
+	fmt.Println("The document is not valid. see errors :", result)
 	//logger.Error("The document is not valid. see errors :\n")
-	return false, nil
+	return true, nil
 
 }
