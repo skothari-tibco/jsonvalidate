@@ -92,7 +92,7 @@ func check(schemaLoader, documentLoader gojsonschema.JSONLoader) (bool, error) {
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 
 	if err != nil {
-		logger.Error(err)
+		//logger.Error(err)
 		return false, nil
 	}
 
@@ -100,7 +100,7 @@ func check(schemaLoader, documentLoader gojsonschema.JSONLoader) (bool, error) {
 		logger.Infof("The document is valid\n")
 		return true, nil
 	}
-	logger.Error("The document is not valid. see errors :\n")
+	//logger.Error("The document is not valid. see errors :\n")
 	return false, nil
 
 }
