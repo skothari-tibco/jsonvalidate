@@ -45,24 +45,24 @@ func (a *JsonValidate) Eval(ctx activity.Context) (done bool, err error) {
 				logger.Infof("Reference Loader")
 				schemaLoder := gojsonschema.NewReferenceLoader(path)
 
-				valid, err := check(schemaLoder, documentLoader)
+				valid, _ := check(schemaLoder, documentLoader)
 				if valid {
 					ctx.SetOutput("isValid", true)
 					return true, nil
 				}
 				ctx.SetOutput("isValid", false)
-				return false, err
+				return false, nil
 			}
 			logger.Infof("String Loader")
 			schemaLoder := gojsonschema.NewStringLoader(path)
 
-			valid, err := check(schemaLoder, documentLoader)
+			valid, _ := check(schemaLoder, documentLoader)
 			if valid {
 				ctx.SetOutput("isValid", true)
 				return true, nil
 			}
 			ctx.SetOutput("isValid", false)
-			return false, err
+			return false, nil
 		}
 
 	}
@@ -74,7 +74,7 @@ func (a *JsonValidate) Eval(ctx activity.Context) (done bool, err error) {
 	}
 	ctx.SetOutput("isValid", false)
 
-	return false, fmt.Errorf("Error encountered in Validation %v", err)
+	return false, nil
 
 }
 
