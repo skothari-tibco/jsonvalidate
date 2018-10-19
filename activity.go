@@ -1,7 +1,8 @@
 package jsonvalidate
 
 import (
-	"fmt"
+	"bytes"
+	"errors"
 	"strings"
 
 	"encoding/json"
@@ -37,7 +38,7 @@ func (a *JsonValidate) Eval(ctx activity.Context) (done bool, err error) {
 
 	//If path is not defined directly try to Unmarshall
 	if path != "" {
-		if isValid(input) {
+		if o, _ := isValid(input); o {
 			documentLoader := gojsonschema.NewStringLoader(input)
 
 			//Check is the path is a path to file/http endpoint. If not it's a string and check the Schema against it
@@ -45,43 +46,55 @@ func (a *JsonValidate) Eval(ctx activity.Context) (done bool, err error) {
 				logger.Infof("Reference Loader")
 				schemaLoder := gojsonschema.NewReferenceLoader(path)
 
-				valid, _ := check(schemaLoder, documentLoader)
+				valid, err := check(schemaLoder, documentLoader)
 				if valid {
+
 					ctx.SetOutput("isValid", true)
 					return true, nil
 				}
+				ctx.SetOutput("log", err)
 				ctx.SetOutput("isValid", false)
 				return true, nil
 			}
 			logger.Infof("String Loader")
 			schemaLoder := gojsonschema.NewStringLoader(path)
 
-			valid, _ := check(schemaLoder, documentLoader)
+			valid, err := check(schemaLoder, documentLoader)
 			if valid {
 				ctx.SetOutput("isValid", true)
 				return true, nil
 			}
+			ctx.SetOutput("log", err)
 			ctx.SetOutput("isValid", false)
+
 			return true, nil
 		}
 
 	}
 
 	logger.Debugf("string is", input)
-	if isValid(input) {
+	o, err := isValid(input)
+	if o {
+
 		ctx.SetOutput("isValid", true)
 		return true, nil
 	}
+	ctx.SetOutput("log", err)
 	ctx.SetOutput("isValid", false)
 
 	return true, nil
 
 }
 
-func isValid(s string) bool {
+func isValid(s string) (bool, error) {
 	var js map[string]interface{}
+	err := json.Unmarshal([]byte(s), &js)
+	if err == nil {
+		return true, nil
+	}
 
-	return json.Unmarshal([]byte(s), &js) == nil
+	return false, errors.New("Invalid JSON")
+
 }
 
 func isPath(s string) bool {
@@ -89,20 +102,26 @@ func isPath(s string) bool {
 	return strings.Contains(s, "/")
 }
 
-func check(schemaLoader, documentLoader gojsonschema.JSONLoader) (bool, error) {
+func check(schemaLoader, documentLoader gojsonschema.JSONLoader) (bool, string) {
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
-	fmt.Println(result, err)
+
 	if err != nil {
 		//logger.Error(err)
-		return false, nil
+		return false, err.Error()
 	}
 
 	if result.Valid() {
 		logger.Infof("The document is valid\n")
-		return true, nil
+		return true, ""
 	}
-	fmt.Println("The document is not valid. see errors :", result)
+	//fmt.Println("The document is not valid. see errors :", result)
 	//logger.Error("The document is not valid. see errors :\n")
-	return false, nil
+	var b bytes.Buffer
+	for _, desc := range result.Errors() {
+		b.WriteString(desc.String())
+		b.WriteString("\n")
+	}
+
+	return false, b.String()
 
 }

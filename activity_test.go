@@ -1,6 +1,7 @@
 package jsonvalidate
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -36,7 +37,6 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-/*
 func TestWithoutPath(t *testing.T) {
 
 	defer func() {
@@ -74,11 +74,10 @@ func TestWithoutPath2(t *testing.T) {
 	act.Eval(tc)
 
 	result := tc.GetOutput("isValid")
-	assert.Equal(t, result, false)
+	assert.Equal(t, result, true)
 
 }
-*/
-/*
+
 func TestWithNullValue(t *testing.T) {
 
 	defer func() {
@@ -99,7 +98,7 @@ func TestWithNullValue(t *testing.T) {
 	assert.Equal(t, result, false)
 
 }
-*/
+
 func TestWithFilePath(t *testing.T) {
 
 	defer func() {
@@ -112,12 +111,13 @@ func TestWithFilePath(t *testing.T) {
 	act := NewActivity(getActivityMetadata())
 	tc := test.NewTestActivityContext(getActivityMetadata())
 
-	tc.SetInput("text", "{\r\n  \"checked\": false,\r\n  \"dimenions\": {\r\n    \"width\": 5,\r\n    \"height\": 10\r\n  },\r\n  \"id\": 1,\r\n  \"name\": \"A green door\",\r\n  \"price\": 12.5,\r\n  \"tags\": [\r\n    \"home\",\r\n    \"green\"\r\n  ]\r\n}")
+	tc.SetInput("text", "{\r\n  \"checed\": false,\r\n  \"dimenions\": {\r\n    \"width\": 5,\r\n    \"height\": 10\r\n  },\r\n  \"id\": 1,\r\n  \"name\": \"A green door\",\r\n  \"price\": 12.5,\r\n  \"tags\": [\r\n    \"home\",\r\n    \"green\"\r\n  ]\r\n}")
 	tc.SetInput("path", "file:///Users/skothari-tibco/flogo/json_validator.json")
 
 	act.Eval(tc)
 
 	result := tc.GetOutput("isValid")
+	fmt.Println(tc.GetOutput("log"))
 	assert.Equal(t, result, false)
 
 }
